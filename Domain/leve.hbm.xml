@@ -4,7 +4,6 @@
     <id name="cid" column ="cid">
       <generator class ="native"/>
     </id>
-    <property name="pid"/>
     <property name="pname"/>
   </class>
 </hibernate-mapping>

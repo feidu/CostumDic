@@ -11,71 +11,221 @@
     <link href="../../Scripts/jquery/themes/default/easyui.css" rel="stylesheet" />
     <link href="../../Scripts/jquery/demo/demo.css" rel="stylesheet" />
     <link href="../../Scripts/jquery/themes/icon.css" rel="stylesheet" />
-    <script type="text/javascript">
-        var url;
-        function dclick() {
-            var row = $('#dg1').datagrid('getSelected');
-            $('#fm').form('load', row);
-        }
-    </script>
+    <script charset="utf-8" src="../../kindeditor/kindeditor-min.js"></script>
+    <script charset="utf-8" src="../../kindeditor/lang/zh_CN.js"></script>
+     <script type="text/javascript">
+         $(function(){   
+             $('#tree').tree({   
+                 animate:true,   
+                 onClick: function (node) {
+                     $('#center').form('clear');
+                    $.getJSON("/Home/GetDetail?id=" + node.id + "", function (json) {
+                            $("#tname").attr("value", json[0].name);
+                            $("#tdetail").attr("value", json[0].detail);
+                            $("#tid").attr("value", json[0].id);
+                     }); 
+                 }   
+             });
+         })
 
+         //function GetTree() {
+         //    var node = this.node.id;
+         //    alert(node);
+         //    //var node = $('#tree').tree('getSelected');
+         //    //$.getJSON("/Home/GetDetail?id=" + node.id + "", function (json) {
+               
+         //    //    $("#tname").attr("value", json[0].name);
+         //    //    $("#tdetail").attr("value", json[0].detail);
+         //    //    $("#tid").attr("value", json[0].id);
+         //    //               });
+         //}
+     </script> 
+        <script type="text/javascript">
+            function loader()
+            {
+                $('#center').form('clear');
+            }
+            var url;
+            function newUser() {
+                $('#cid').combobox({
+                    url: '/Home/LeveCombox',
+                    valueField: 'id',
+                    textField: 'text'
+                   
+                });
+                $('#dlg').dialog('open').dialog('setTitle', '添加内容');
+                $('#fm').form('clear');
+                url = '/Home/InfoAdd';
+            }
+            function editUser() {
+                
+                var node = $('#tree').tree('getSelected');
+                if (id) {
+                    $('#dlg').dialog('open').dialog('setTitle', '修改内容');
+                    $.getJSON("/Home/GetDetail?id="+node.id+"", function (json) {
+                        $("#name").attr("value", json[0].name);
+                        $("#detail").attr("value", json[0].detail);
+                        $('#id').attr("value",json[0].id);
+                        $('#cid').combobox({
+                             url: '/Home/LeveCombox?cid='+json[0].cid,
+                             valueField: 'id',
+                             textField:'text'
+                         });
+                        url = '/Home/InfoUpd';
+                    });
+                }
+            }
+            function saveUser() {
+                $('#fm').form('submit', {
+                    url: url,
+                    success: function (result) {
+                        $('#dlg').dialog('close');
+                        $('#tree').tree('reload');
+                        alert("操作成功！");
+                        $('#center').form('clear');
+                    }
+                });
+            }
+            function destroyUser() {
+                var node = $('#tree').tree('getSelected');
+                $.getJSON("/Home/GetDetail?id="+node.id+"", function (json) {
+                   if (id) {
+                            $.messager.confirm('Confirm', '是否真的删除该条内容?', function (r) {
+                                if (r) {
+                                    $.post('/Home/InfoDel', { id: json[0].id }, function (result) {
+                                        $('#tree').tree('reload');
+                                        alert("删除成功！");
+                                        $('#center').form('clear');
+                                    }, 'json');
+                                }
+                            });
+                        }
 
-
+                });
+            }
+            function leveadd() {
+                $('#dlgl').dialog('open').dialog('setTitle', '添加类型');
+                $('#fml').form('clear');
+                url = '/Home/LeveAdd';
+            }
+            function leveupd() {
+                $('#dlgl').dialog('open').dialog('setTitle', '修改类型');
+                var node = $('#tree').tree('getSelected');
+                $.getJSON("/Home/GetLeveBy?id=" + node.id + "", function (json) {
+                     $("#lid").attr("value", json[0].cid);
+                     $("#pname").attr("value", json[0].pname);
+                    });
+                url = '/Home/LeveUpd';
+            }
+            function saveleve() {
+                $('#fml').form('submit', {
+                    url: url,
+                    success: function (result) {
+                        $('#dlgl').dialog('close');
+                        $('#tree').tree('reload');
+                        alert("操作成功！");
+                        $('#center').form('clear');
+                    }
+                });
+            }
+            function levedel(){
+                var node = $('#tree').tree('getSelected');
+                $.getJSON("/Home/GetLeveBy?id="+node.id+"", function (json) {
+                    if (id) {
+                        $.messager.confirm('Confirm', '是否真的删除该类型?', function (r) {
+                            if (r) {
+                                $.post('/Home/LeveDel', { cid:json[0].cid}, function (result) {
+                                    $('#tree').tree('reload');
+                                    alert("删除成功！");
+                                    $('#center').form('clear');
+                                }, 'json');
+                            }
+                        });
+                    }
+                })
+                }
+    </script>   
+    <style>
+body{margin:0;padding:0;}
+.center{
+    width:1300px;
+    height:600px;
+    border:1px solid #000000;
+    margin:10px auto;
+}
+</style>
 </head>
-<body>
-    <div style="margin: 10px 0;"></div>
-    <div class="easyui-layout" style="width: 1200px; height: 700px;">
-        <div data-options="region:'north'" style="height: 100px"></div>
-        <div data-options="region:'south',split:true" style="height: 50px;"></div>
-        <div data-options="region:'west',split:true" title="West" id="West" style="width: 360px;">
+<body  onload="loader()">
+    <div class="center">
+    <div class="easyui-layout" style=" margin:0px; width: 1300px; height: 650px;">
+        <div data-options="region:'north'" style="height: 100px">
+            <img src="../../img/title.jpg" /></div>
+        <div data-options="region:'south',split:true" style="height: 30px; text-align:center" >Copyright © 1999-2019,Feidu, All Rights Reserved </div>
+        <div data-options="region:'west',split:true" title="类别" id="West" style="width: 400px;">
+                  <ul id="tree" class="easyui-tree"  data-options="url:'/Home/GetFrist',animate:true,dnd:true">
 
-
-
-
-            <div title="网上商城模板" data-options="iconCls:'icon-ok'" style="overflow: auto; padding: 10px;">
-                <table id="dg2" class="easyui-datagrid" singleselect="true" style="width: 360px;" url="/Home/GetLeve?id=3">
-                    <thead>
-                        <tr>
-                            <th field="name"></th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
-            <div title="全球购物模板" data-options="iconCls:'icon-ok'" style="overflow: auto; padding: 10px;">
-                <table id="dg3" class="easyui-datagrid" style="width: 360px;" url="/Home/GetLeve?id=4">
-                    <thead>
-                        <tr>
-                            <th field="name"></th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
-
+                  </ul>  
+         </div>
+    <div id="center" data-options="region:'center',title:'详细信息',iconCls:'icon-ok'">
+            <label>情况名称：</label><input id="tname" style="width:400px" readonly="true"/><input id="tid" style="display:none"></input>
+            <div id="p"class="easyui-panel" title="回复内容" style="height:400px;padding:10px;width:898px;">  
+              
+                         <textarea id="tdetail" style="width:800px; height:300px;font-size:large " readonly="true" >
+                        </textarea>
+               
+              </div>
+                    <div>
+                    <button id="bta" onclick="newUser()">添加信息</button>
+                    <button id="btu" onclick="editUser()">修改信息</button>
+                    <button id="btd" onclick="destroyUser()">删除信息</button>
+                    <button id="btla" onclick="leveadd()">添加类型</button>
+                    <button id="btlu" onclick="leveupd()">修改类型</button>
+                    <button id="btld" onclick="levedel()">删除类型</button>
+                    </div>
+             </div>
+                     <div id="dlgl" class="easyui-dialog" style="width:400px;height:200px;padding:10px 20px"  
+                            closed="true" buttons="#dlgl-buttons">  
+                        
+                                 <form id="fml" method="post" novalidate> 
+                                            <div class="fitem">  
+                                                <input id="lid" name="cid" class="easyui-validatebox" style="width:400px;display:none">  
+                                            </div>   
+                                             <div class="fitem">  
+                                                <label>类别名称:</label>  <input id="pname" name="pname" required="true" class="easyui-validatebox" style="width:200px;">  
+                                            </div>   
+                                      </form>
+                         </div>
+                         <div id="dlgl-buttons">  
+                                <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveleve()">保存</a>  
+                                <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlgl').dialog('close')">取消</a>  
+                            </div>  
+                 <div id="dlg" class="easyui-dialog" style="width:600px;height:450px;padding:10px 20px"  
+                closed="true" buttons="#dlg-buttons">  
+                        
+                <form id="fm" method="post" novalidate> 
+                    <div class="fitem">  
+                        <input id="id" name="id" class="easyui-validatebox" style="width:400px;display:none">  
+                    </div>   
+                    <div class="fitem">  
+                        <label>所属类别:</label>  
+                        <select id="cid"  name="cid" style="width:405px;" editable=false></select>
+                    </div>  
+                    <div class="fitem">  
+                        <label>情况名称:</label>  
+                        <input id="name" name="name" class="easyui-validatebox" style="width:400px;" required="true">  
+                    </div>  
+                    <div class="fitem">
+                        <label>回复内容:</label>  
+                        <textarea id="detail" name="detail" class="easyui-validatebox" required="true" style="width:450px;height:300px;font-size:initial">
+                            </textarea>
+                    </div>  
+                </form>  
+            </div>  
+            <div id="dlg-buttons">  
+                <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="saveUser()">保存</a>  
+                <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')">取消</a>  
+            </div>  
+</div>
         </div>
-    </div>
-    <div data-options="region:'center',title:'详细信息',iconCls:'icon-ok'">
-        <form id="fm" method="post" novalidate>
-            <div class="fitem">
-                <input name="Id" class="easyui-validatebox" required="true" style="display: none">
-            </div>
-            <div class="fitem">
-                <label>标题名称:</label>
-                <input name="Name" class="easyui-validatebox">
-            </div>
-            <div id="p" class="easyui-panel" title="回复内容" style="height: 400px; padding: 10px;">
-                <ul id="detail">
-                    <li>easyui is a collection of user-interface plugin based on jQuery.</li>
-                    <li>easyui provides essential functionality for building modem, interactive, javascript applications.</li>
-                    <li>using easyui you don't need to write many javascript code, you usually defines user-interface by writing some HTML markup.</li>
-                    <li>complete framework for HTML5 web page.</li>
-                    <li>easyui save your time and scales while developing your products.</li>
-                    <li>easyui is very easy but powerful.</li>
-                </ul>
-            </div>
-        </form>
-    </div>
-
-    </div>  
-      
 </body>
 </html>
